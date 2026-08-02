@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="继承和多态/继承和多态.vcxproj" Id="e3888546-9ae7-4728-9368-437aa8a8f0c7" />
+</Solution>

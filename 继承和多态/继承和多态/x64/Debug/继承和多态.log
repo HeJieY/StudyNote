@@ -1,0 +1,3 @@
+﻿  test.cpp
+D:\code\c++\StudyNote\继承和多态\继承和多态\test.cpp(1,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+  继承和多态.vcxproj -> D:\code\c++\StudyNote\继承和多态\x64\Debug\继承和多态.exe
