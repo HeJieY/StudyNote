@@ -1,0 +1,8 @@
+# Visual Studio 缓存
+.vs/
+*.ipch
+*.pch
+*.suo
+*.user
+*.sdf
+*.opensdf
