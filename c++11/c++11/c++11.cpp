@@ -3,6 +3,7 @@
 #include<vector>
 #include<string>
 #include<map>
+#include<functional>
 using namespace std;
 //	1.列表初始化
 void test1()
@@ -108,11 +109,24 @@ void test4(args... arg)
 //	lambda如果想使用外部的参数就需要使用传引用捕捉
 //	=隐式捕捉来的变量可以修改,&引用捕捉的变量不可以修改,还有混合捕捉
 //9.function  包装器用于将成员函数/函数指针/仿函数/lambda表达式等存在一个具体的function中
+//10.bind:一个函数模板
+using placeholders::_1;
+using placeholders::_2;
+int sub(int x, int y)
+{
+	return x - y;
+}
+void test5()
+{
+	auto newSub = bind(sub,_2, _1);//可以起到置换参数的作用;
+	cout<<sub(10, 5)<<endl;
+	cout<<newSub(10, 5)<<endl;
+	auto newSub2 = bind(sub, _1, 15);//改变参数,就是原本函数有两个参数,但是的二个参数是被绑定了的(15)
+	cout << newSub2(10) << endl;
+}
+
 int main()
 {	
-	int x = 10;
-	test4(1);
-	test4(1, 2, 3);
-	test4(x, 5);
+	test5();
 	return 0;
 }
