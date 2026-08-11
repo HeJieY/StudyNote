@@ -33,8 +33,8 @@ protected:
    virtual void netBind(InetAddr& hostData);
    virtual bool netListen() = 0;
    virtual int nettConnect() = 0;
-   virtual std::string netRecv() = 0;
-   virtual ssize_t netSendTo(std::string& message) = 0;
+   virtual ssize_t netRecv(std::string* out) = 0;
+   virtual ssize_t netSendTo(const std::string& in) = 0;
    virtual bool netConnect(InetAddr& hostData) = 0;
    virtual void resourceClose() = 0;
    //udp
@@ -73,9 +73,9 @@ class TcpSocket : public Socket
         netBind(hostData);
         netListen();
     }
-    ssize_t netSendTo(std::string& message) override
+    ssize_t netSendTo(const std::string& in) override
     {
-        ssize_t ret = send(_socketFd,message.c_str(),message.size(),0);
+        ssize_t ret = send(_socketFd,in.c_str(),in.size(),0);
         if(ret >= 0)
         {
             LOG(INFO,"Send success!\n");
@@ -86,19 +86,25 @@ class TcpSocket : public Socket
         }
     }
 
-    std::string netRecv() override
+    ssize_t netRecv(std::string* out) override
     {
         char buffer[1024];
-        ssize_t ret = recv(_socketFd,buffer,sizeof(buffer),0);
+        ssize_t ret = recv(_socketFd,buffer,sizeof(buffer)-1,0);
         if(ret >= 0)
         {
-             LOG(INFO,"Recv Success!\n");
-             return buffer;
+            LOG(INFO,"Recv Success!\n");
+            buffer[ret] = 0;
+            *out += buffer;
+            return ret;
         }
         else
         {
             LOG(WARN,"Recv error!\n");
         }
+    }
+    int getSocketFd()
+    {
+        return _socketFd;
     }
     void resourceClose() override
     {
