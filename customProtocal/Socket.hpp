@@ -16,29 +16,30 @@ const static int gBackLog = 16;
 //关于tcp连接的三个关键接口
 //1.server端:listen accept
 //listen:将被bind的socket设置为监听状态,持续捕捉
-//accept:捕获监听转台的socket捕捉到的连接,并以套接字形式返回,这个socket就是与客户端通信的套接字
+//accept:捕获监听状态的socket捕捉到的连接,并以套接字形式返回,这个socket就是与客户端通信的套接字
 //2.client端:connect
 //connect:相指定主机发送连接请求,三次握手成功后会该socket用于c/s通信
 class  Socket
 {
-
-protected:
+public:
    Socket() 
    {
 
    }
    //tcp
-   virtual std::shared_ptr<Socket>  netAccept(InetAddr& hostData) = 0;
-   virtual void createSocket() = 0;
-   virtual void netBind(InetAddr& hostData);
-   virtual bool netListen() = 0;
+   virtual std::shared_ptr<TcpSocket>  netAccept(InetAddr& hostData) = 0;
    virtual int nettConnect() = 0;
    virtual ssize_t netRecv(std::string* out) = 0;
    virtual ssize_t netSendTo(const std::string& in) = 0;
    virtual bool netConnect(InetAddr& hostData) = 0;
    virtual void resourceClose() = 0;
+   virtual bool buildTcpSocket(InetAddr& hostData) = 0;
+   virtual int getSocketFd() = 0;
+protected:
+   virtual void createSocket() = 0;
+   virtual void netBind(InetAddr& hostData);
+   virtual bool netListen() = 0;
    //udp
-
 protected:
 };
 
@@ -53,9 +54,12 @@ class TcpSocket : public Socket
         else
             return false;
     }
-    std::shared_ptr<Socket> netAccept(InetAddr& hostData) override
+    std::shared_ptr<TcpSocket> netAccept(InetAddr& hostData) override
     {
         int condFd = accept(_socketFd,hostData.getSockAddrIn(),hostData.getLenAddress());
+        //accept函数参数介绍
+        //param1:监听套接字
+        //param2,3:带出客户端的信息
         if(condFd ==-1)
         {
             LOG(WARN,"Accept error!\n");
@@ -102,7 +106,7 @@ class TcpSocket : public Socket
             LOG(WARN,"Recv error!\n");
         }
     }
-    int getSocketFd()
+    int getSocketFd() override
     {
         return _socketFd;
     }

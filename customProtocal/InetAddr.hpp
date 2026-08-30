@@ -3,12 +3,16 @@
 #include<netinet/in.h>
 #include<arpa/inet.h>
 #include<string>
-//这个类使用来描述客户端信息的
+//这个类使用来描述设备网络信息的
 //1.提供sockaddr_in 提取具体的信息
 //2.提供ip,port 构造对应得sockaddr
 class InetAddr
 {
 public:
+    InetAddr()
+    {
+        
+    }
     InetAddr(const std::string& ip,const uint16_t port)
         :_ip(ip)
         ,_port(port)
