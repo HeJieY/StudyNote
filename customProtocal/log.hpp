@@ -24,8 +24,6 @@ const static std::string FATAL_LOG = "Fatal.txt";
 const static std::string COMPLETE_LOG = "Log.txt";
 const static std::string SCREEN_LOG = "Screen";
 
-const static Log LOG;
-
 #define BUFFER_SIZE 1024
 #define DATA_SIZE 125
 typedef int logLevel;
@@ -184,3 +182,4 @@ private:
         }
     }
 };
+static Log LOG;

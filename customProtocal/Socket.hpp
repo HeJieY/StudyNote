@@ -27,17 +27,16 @@ public:
 
    }
    //tcp
-   virtual std::shared_ptr<TcpSocket>  netAccept(InetAddr& hostData) = 0;
-   virtual int nettConnect() = 0;
+   virtual std::shared_ptr<Socket> netAccept(InetAddr& hostData) = 0;
    virtual ssize_t netRecv(std::string* out) = 0;
    virtual ssize_t netSendTo(const std::string& in) = 0;
-   virtual bool netConnect(InetAddr& hostData) = 0;
+   virtual int netConnect(InetAddr& hostData) = 0;
    virtual void resourceClose() = 0;
    virtual bool buildTcpSocket(InetAddr& hostData) = 0;
    virtual int getSocketFd() = 0;
 protected:
    virtual void createSocket() = 0;
-   virtual void netBind(InetAddr& hostData);
+   virtual void netBind(InetAddr& hostData) = 0;
    virtual bool netListen() = 0;
    //udp
 protected:
@@ -45,37 +44,54 @@ protected:
 
 class TcpSocket : public Socket
 {
-    public:
-    bool netConnect(InetAddr& hostData) override
+public:
+    TcpSocket()
     {
-        int ret = connect(_socketFd,hostData.getSockAddrIn(),hostData.getLen());
-        if(ret == 0)
-            return true;
-        else
-            return false;
+        createSocket();
     }
-    std::shared_ptr<TcpSocket> netAccept(InetAddr& hostData) override
+    TcpSocket(int socketFd) 
+        :_socketFd(socketFd)
     {
-        int condFd = accept(_socketFd,hostData.getSockAddrIn(),hostData.getLenAddress());
-        //accept函数参数介绍
-        //param1:监听套接字
-        //param2,3:带出客户端的信息
-        if(condFd ==-1)
-        {
-            LOG(WARN,"Accept error!\n");
-            return nullptr;
-        }
-        else
-        {
-            return std::make_shared<TcpSocket>(condFd);
-        } 
 
+    }
+    
+    public:
+    int netConnect(InetAddr& hostData) override
+    {
+        return connect(_socketFd,hostData.getSockAddrIn(),hostData.getLen()); 
+    }
+    std::shared_ptr<Socket> netAccept(InetAddr& hostData) override
+    {
+        int cnt = 3;
+        while (cnt--)
+        {
+            int condFd = accept(_socketFd, hostData.getSockAddrIn(), hostData.getLenAddress());
+            if (condFd == -1)
+            {
+              LOG(INFO, "Accept fail,once again\n"); 
+              sleep(2);
+              continue;
+            }
+            else
+            {
+                LOG(INFO, "Get a link\n");
+                return std::make_shared<TcpSocket>(condFd);
+            }
+        }
+        LOG(WARN, "Accept error!\n");
+        perror("Accept fail!:");
+        return nullptr;
+        // accept函数参数介绍
+        // param1:监听套接字
+        // param2,3:带出客户端的信息
     }
     bool buildTcpSocket(InetAddr& hostData)
     {
+        LOG(INFO,"BuileTcpSocket");
         createSocket();
         netBind(hostData);
         netListen();
+        return true;
     }
     ssize_t netSendTo(const std::string& in) override
     {
@@ -83,10 +99,12 @@ class TcpSocket : public Socket
         if(ret >= 0)
         {
             LOG(INFO,"Send success!\n");
+            return ret;
         }
         else
         {
             LOG(WARN,"Send error!\n");
+            return ret;
         }
     }
 
@@ -94,16 +112,22 @@ class TcpSocket : public Socket
     {
         char buffer[1024];
         ssize_t ret = recv(_socketFd,buffer,sizeof(buffer)-1,0);
-        if(ret >= 0)
+        if(ret > 0)
         {
             LOG(INFO,"Recv Success!\n");
             buffer[ret] = 0;
             *out += buffer;
             return ret;
         }
-        else
+        else if(ret <  0)
         {
             LOG(WARN,"Recv error!\n");
+            return ret;
+        }
+        else
+        {
+            LOG(WARN,"Connect error!\n");
+            return ret; 
         }
     }
     int getSocketFd() override
@@ -128,7 +152,7 @@ protected:
     void netBind(InetAddr& hostData) override
     {
        int ret = bind(_socketFd,hostData.getSockAddrIn(),hostData.getLen());
-        if(bind < 0)
+        if(ret < 0)
         {
             LOG(ERROR,"Bind error!\n");
             exit(BIND_ERROR);
@@ -139,8 +163,9 @@ protected:
        if(listen(_socketFd,gBackLog)!=0)
        {
             LOG(ERROR,"Listen error!\n");
+            return false;
        }
-    
+       return true;
    }
 private:
    int _socketFd;

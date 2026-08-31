@@ -10,6 +10,7 @@ public:
     Response Execute(const Request &req)
     {
         Response resp;
+        printf("%d %d %d = \n",req._x,req._op,req._y);
         switch (req._op)
         {
         case '+':

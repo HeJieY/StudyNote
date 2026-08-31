@@ -7,7 +7,7 @@ using Handler_t = std::function<std::string(std::string&)>;
 class TcpServer
 {
 public:
-    TcpServer(std::string& ip,const uint16_t& port,Handler_t hander)
+    TcpServer(const std::string& ip,const uint16_t& port,Handler_t hander)
         :_hander(hander)
         ,_listenSocket(std::make_unique<TcpSocket>())
         ,_server(ip,port)
@@ -34,16 +34,13 @@ public:
             if(socketFd->getSocketFd() == -1)
                 continue;
             LOG(INFO,"Get a new link,socketfd is %d\n",socketFd->getSocketFd());
-
             if(fork() == 0)
             {
                 //子进程
                 service(socketFd,client);
                 socketFd->resourceClose();
                 exit(0);
-
             }
-
         }
 
     }
@@ -57,10 +54,25 @@ private:
         std::string inBuffer,outBuffer;
         while(true)
         {
-            inBuffer.clear();
-            socketFd->netRecv(&inBuffer); 
-            LOG(INFO,"Get client say# %s\n",inBuffer.c_str());
+            printf("outbuffer is null\n");
+            ssize_t ret = socketFd->netRecv(&inBuffer); 
+            if(ret <= 0 )
+            {
+                LOG(INFO,"Connect client fail!\n");
+                break;
+            }
+            LOG(INFO,"Get client say# %s\n",inBuffer.c_str());  
+            if(_hander)
+            {
+                
+                //这里是网络层得到的应该是jsonstr也就是由回调函数去处理协议相关的
+                outBuffer = _hander(inBuffer);
+                if(outBuffer == "")
+                    continue;
+                socketFd->netSendTo(outBuffer);
             
+                inBuffer.clear();
+            }
         }
     }
 };

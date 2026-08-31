@@ -53,12 +53,17 @@ public:
         return (client._ip == _ip) && (client._port == _host.sin_port);
     }
 
-    bool operator=(const struct InetAddr& client)
+    void operator=(const struct InetAddr& client)
     {
+        if(*this == client)
+        {
+            return;
+        }
         _ip = client._ip;
         _port = client._port;
         _host =  client._host;
         _len = client._len;
+        
     }
     socklen_t* getLenAddress()
     {
