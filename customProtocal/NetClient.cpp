@@ -23,32 +23,51 @@ int main()
             std::unique_ptr<Protocol> protocol = std::make_unique<Protocol>([](Response& rsp)->void{
                 std::cout << rsp._result <<" " << rsp._status << std::endl;
             });
-            int x,y;
-            char op;
-            LOG(INFO,"Enter your x#");
-            std::cin >> x;
-            LOG(INFO,"Enter your y#");
-            std::cin >> y;
-            LOG(INFO,"Enter your op#");
-            std::cin  >> op;
-            //协议与打包
-            Request req(x,y,op);
-            std::string jsonStr;
-            req.serialize(&jsonStr);
-            protocol->packet(jsonStr);
-            int ret = tcpClient->netSendTo(jsonStr);
-            if(ret < 0) 
-            {
-                LOG(DEBUG,"Send error!\n");
-            }
-            //接收返回的报文
-            std::string in;
             while (true)
             {
-                tcpClient->netRecv(&in);
-                protocol->parseResponse(in);
-                if(in =="")
-                    continue;
+                int connectStatus = 1;
+                if(connectStatus < 0)
+                {
+                    LOG(INFO,"Connect with  server,attempt connect  again!\n");
+                    sleep(3);
+                }
+                int x, y;
+                char op;
+                LOG(INFO, "Enter your x#");
+                std::cin >> x;
+                LOG(INFO, "Enter your y#");
+                std::cin >> y;
+                LOG(INFO, "Enter your op#");
+                std::cin >> op;
+                // 协议与打包
+                Request req(x, y, op);
+                std::string jsonStr;
+                req.serialize(&jsonStr);
+                jsonStr = protocol->packet(jsonStr);
+                // std::cout << "this is  send message:" << jsonStr << std::endl;
+                int ret = tcpClient->netSendTo(jsonStr);
+                if (ret < 0)
+                {
+                    LOG(DEBUG, "Send error!\n");
+                }
+                // 接收返回的报文
+                std::string in;
+                while (true)
+                {
+                    connectStatus = tcpClient->netRecv(&in);
+                    if(connectStatus  < 0)
+                    {
+                        LOG(WARN,"Connect with  server!\n");
+                        break;
+                    }
+                    bool flag = protocol->parseResponse(in);
+                    if (flag)
+                    {
+                        break;
+                    }
+                        continue;
+                }
+            
             }
         }
     }

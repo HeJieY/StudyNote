@@ -11,7 +11,8 @@ class InetAddr
 public:
     InetAddr()
     {
-        
+        memset(&_host,0,sizeof(_host));
+        _len = sizeof(_host);
     }
     InetAddr(const std::string& ip,const uint16_t port)
         :_ip(ip)

@@ -123,9 +123,7 @@ public:
     //ret > 0  : no error 
     int unPacket(std::string& packet,std::string* jsonStr)
     {
-        while (true)
-        {
-            printf("unPacket used\n");
+            // printf("unPacket used\n");
             if (packet.empty())
                 return 0;
             if (jsonStr == nullptr)
@@ -140,9 +138,9 @@ public:
             if (packet.size() < total)
                return 0;
             *jsonStr = packet.substr(pos + gSeq.size(), len);
+            // printf("走到这了\n");
             packet.erase(0, total);
             return 1;
-        }
     }
 
     std::string parseRequest(std::string& inbuffer)
@@ -150,8 +148,8 @@ public:
         std::string outbuffer =  "";
         while(true)
         {
-            printf("parseRequest used\n");
-            std::string jsonStr;
+            // printf("parseRequest used\n");
+            std::string jsonStr = "";
             int ret  = unPacket(inbuffer,&jsonStr);
             if(ret < 0 )
             {
@@ -165,19 +163,19 @@ public:
             }
             Request req;
             req.deSerialize(jsonStr);
-            std::cout <<  "this  is jsonStr:" << jsonStr <<  std::endl; 
-            std::cout << "this is inbuffer" << inbuffer <<  std::endl;
+            // std::cout <<  "this  is jsonStr:" << jsonStr <<  std::endl; 
+            // std::cout << "this is inbuffer" << inbuffer <<  std::endl;
             Response rsp;
             rsp = _handlerRequest(req);
-            printf("答案是%d",rsp._result);
+            // printf("答案是%d",rsp._result);
             rsp.serialize(&outbuffer);
             return packet(outbuffer);
         }
     }
    
-    std::string parseResponse(std::string& inbuffer)
+    bool parseResponse(std::string& inbuffer)
     {
-        std::string outbuffer = "";
+    
         while(true)
         {
             std::string jsonStr;
@@ -185,14 +183,17 @@ public:
             if(ret < 0 )
             {
                 LOG(DEBUG,"Invalid argument!\n");
-                return outbuffer;
+                return false;
             }
             if(ret == 0)
-                return outbuffer;
+                return false;
             Response rsp;
             rsp.deSerialize(jsonStr);
             if (_handlerResponse)
+            {
                 _handlerResponse(rsp);
+                return true;
+            }
         }
     }
 private:

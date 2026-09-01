@@ -69,12 +69,13 @@ public:
             if (condFd == -1)
             {
               LOG(INFO, "Accept fail,once again\n"); 
+              perror("Accept fail:");
               sleep(2);
               continue;
             }
             else
             {
-                LOG(INFO, "Get a link\n");
+                LOG(INFO, "Get a connect\n");
                 return std::make_shared<TcpSocket>(condFd);
             }
         }
@@ -98,12 +99,12 @@ public:
         ssize_t ret = send(_socketFd,in.c_str(),in.size(),0);
         if(ret >= 0)
         {
-            LOG(INFO,"Send success!\n");
+            LOG(INFO,"Send success!");
             return ret;
         }
         else
         {
-            LOG(WARN,"Send error!\n");
+            LOG(WARN,"Send error!");
             return ret;
         }
     }
@@ -114,7 +115,7 @@ public:
         ssize_t ret = recv(_socketFd,buffer,sizeof(buffer)-1,0);
         if(ret > 0)
         {
-            LOG(INFO,"Recv Success!\n");
+            LOG(INFO,"Recv Success!");
             buffer[ret] = 0;
             *out += buffer;
             return ret;

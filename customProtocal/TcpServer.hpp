@@ -13,7 +13,7 @@ public:
         ,_server(ip,port)
     {
         _listenSocket->buildTcpSocket(_server);
-        LOG(INFO,"Create listen socket success!\n");
+        LOG(INFO,"Create listen socket success!");
     }
     ~TcpServer()
     {
@@ -54,14 +54,14 @@ private:
         std::string inBuffer,outBuffer;
         while(true)
         {
-            printf("outbuffer is null\n");
+            // printf("outbuffer is null\n");
             ssize_t ret = socketFd->netRecv(&inBuffer); 
             if(ret <= 0 )
             {
                 LOG(INFO,"Connect client fail!\n");
                 break;
             }
-            LOG(INFO,"Get client say# %s\n",inBuffer.c_str());  
+            // LOG(INFO,"Get client say# %s\n",inBuffer.c_str());  
             if(_hander)
             {
                 
