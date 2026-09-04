@@ -49,7 +49,6 @@ public:
     {
         if (path == SCREEN_LOG)
         {
-            
         }
         else
         {
@@ -183,4 +182,4 @@ private:
         }
     }
 };
-static Log LOG(SCREEN_LOG);
+static Log LOG("SCRREN LOG");
