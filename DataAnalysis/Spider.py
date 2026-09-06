@@ -21,6 +21,8 @@ FIELDS = [
     "industryType2Str", "issueDateString", "updateDateTime",
     "applyTimeText", "jobDescribe", "jobTags",
     "jobWelfareCodeDataList",
+    "jobType", "hireType", "isIntern", "isFromXyx", "termStr",
+    "jobNumString",
 ]
 
 
@@ -182,6 +184,7 @@ class Spider:
             print("no jobs fetched")
             return df
 
+        df = df.drop_duplicates(subset="jobId", keep="first").reset_index(drop=True)
         df = df[[c for c in FIELDS if c in df.columns]]
         df["welfare"] = df["jobWelfareCodeDataList"].apply(
             lambda x: "|".join(w["chineseTitle"] for w in x) if isinstance(x, list) else "")
